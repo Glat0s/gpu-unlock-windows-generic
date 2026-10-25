@@ -1,0 +1,16 @@
+/build/
+/tools/
+/local/
+/reference_repos/
+/assets/*
+!/assets/gui-preview.png
+/usb-package/
+/assets-verified.json
+/hardware-inventory*.json
+/src/unlock/local_board.h
+/benchmark/*.exe
+/benchmark/*.json
+/benchmark-reports/*
+!/benchmark-reports/.gitkeep
+__pycache__/
+*.pyc
