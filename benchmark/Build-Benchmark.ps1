@@ -61,11 +61,11 @@ Write-Host "Using nvcc: $nvcc" -ForegroundColor Cyan
 Push-Location $BenchDir
 try {
     Write-Host "Building mma_bench.exe (sm_86 Ampere + sm_89 Ada)..." -ForegroundColor Yellow
-    & $nvcc -O3 -gencode arch=compute_86,code=sm_86 -gencode arch=compute_89,code=sm_89 @ccbinArgs -o "mma_bench.exe" "mma_bench.cu"
+    & $nvcc -O3 -Xcompiler /MT -gencode arch=compute_86,code=sm_86 -gencode arch=compute_89,code=sm_89 @ccbinArgs -o "mma_bench.exe" "mma_bench.cu"
     if ($LASTEXITCODE -ne 0) { throw "Failed to build mma_bench.exe" }
 
     Write-Host "Building validate_gemm.exe (sm_86 Ampere + sm_89 Ada + cuBLAS)..." -ForegroundColor Yellow
-    & $nvcc -O3 -gencode arch=compute_86,code=sm_86 -gencode arch=compute_89,code=sm_89 @ccbinArgs -lcublas -o "validate_gemm.exe" "validate_gemm.cu"
+    & $nvcc -O3 -Xcompiler /MT -gencode arch=compute_86,code=sm_86 -gencode arch=compute_89,code=sm_89 @ccbinArgs -lcublas -o "validate_gemm.exe" "validate_gemm.cu"
     if ($LASTEXITCODE -ne 0) { throw "Failed to build validate_gemm.exe" }
 
     Write-Host "Successfully built mma_bench.exe and validate_gemm.exe!" -ForegroundColor Green

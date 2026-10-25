@@ -12,6 +12,12 @@ Example screenshot; detected hardware, measurements and readiness results depend
 
 ## Build from source
 
+For a ready-to-run download, use the **[latest portable Windows x64 release](https://github.com/Glat0s/gpu-unlock-windows-generic/releases/latest)**. Download `gpu-unlock-*-windows-x64-portable.zip` (not GitHub's automatic source ZIP), right-click it, select **Extract All**, then double-click `Launch-UsbCreator.cmd` in the extracted folder. Keep the entire folder together. No installer, Python, Zig, CUDA Toolkit or Visual Studio is needed to create USB media or run the included benchmarks. Windows 10/11 x64, Windows PowerShell 5.1 and a compatible NVIDIA GPU driver are required. Rebuilding and the optional Python research utilities still require development tools.
+
+The portable ZIP contains all three EFI loaders, the nine pinned firmware assets, generic configuration, benchmark executables, CUDA runtime libraries, license notices and matching source. It works offline after download. Benchmark reports and profiles are written beside the application, so extract it somewhere writable, such as Downloads or a user-owned tools folder. To check an untouched extraction, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\Verify-Portable.ps1`; the release also includes a `.zip.sha256` checksum. Verification detects subsequent edits to included profiles as well as corruption.
+
+GitHub's **Code / Download ZIP** is the source distribution. The ignored `tools/` folder contains the compiler, and `usb-package/` contains generated output; neither is required in Git because the portable release supplies the runtime payload. Source builds follow the steps below.
+
 Use Windows x64, Python 3.14+ (for extracting the pinned tar.zst firmware package), and Zig 0.14.1. Extract Zig into `tools/zig-x86_64-windows-0.14.1`, or set `ZIG_EXE` to its executable. Compiler caches stay under `build/`.
 
 ```powershell
@@ -27,7 +33,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests/Test-Application.ps1
 
 Run `Launch-UsbCreator.cmd`. The GUI discovers the current machine each time it starts and provides refresh controls. Review the discovered GPU, ESP, Secure Boot and other readiness checks. Missing permissions or unavailable hardware are not proof of compatibility. Use an elevated PowerShell session when Windows denies storage inspection.
 
-For direct PowerShell use, launch `powershell.exe -NoProfile -ExecutionPolicy Bypass -STA -File .\UsbCreatorGui.ps1`. Build the package first using the source-build steps above; generated loaders and firmware are not included in the source checkout.
+For direct PowerShell use, launch `powershell.exe -NoProfile -ExecutionPolicy Bypass -STA -File .\UsbCreatorGui.ps1`. Source checkouts need a build first; portable releases are already built.
 
 Choose the local tailored profile, generic discovery, or a catalog model. Inspect the INI preview. Select an existing FAT32 USB drive and create the package. The application copies files; it does not format disks. Existing application files and `EFI/BOOT/BOOTX64.EFI` on the target are overwritten. Keep other boot media separate.
 
@@ -46,7 +52,7 @@ The loader selects a catalog GPU, checks its live PCI/MMIO state and uses runtim
 
 ## Benchmarks
 
-Install the CUDA Toolkit and supported MSVC x64 C++ build tools. Build from a Visual Studio x64 developer shell or use automatic installation discovery:
+Portable releases include the benchmark executables and their CUDA libraries. For source builds, install the CUDA Toolkit and supported MSVC x64 C++ build tools. Build from a Visual Studio x64 developer shell or use automatic installation discovery:
 
 ```powershell
 .\benchmark\Build-Benchmark.ps1
@@ -60,6 +66,14 @@ Each full run saves a timestamped human-readable report under `benchmark-reports
 The lock/unlock badge is a throughput-ratio estimate, not a register read or proof of firmware success. Clocks, thermals, power and competing workloads affect measurements. Missing or failed numerical validation is an error, and the CLI exits unsuccessfully. Quick startup probes skip numerical validation.
 
 ## Repository hygiene and licensing
+
+Maintainers can generate the release on a Windows x64 build machine with Python, Zig, CUDA and MSVC installed:
+
+```powershell
+python package_portable.py --version v0.1.0 --cuda "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.2"
+```
+
+This rebuilds EFI and benchmarks, runs host/application checks, resolves benchmark DLL imports, and writes the portable ZIP and SHA-256 sidecar under `dist/`. It fails on unresolved dependencies. CUDA's cuBLASLt library is included explicitly because it can be loaded dynamically. The benchmark programs use the static MSVC runtime. Source files are selected from Git's tracked file list and current working tree; commit or stage new source files before packaging. Downloaded compilers, caches, local hardware headers, inventories and USB logs are excluded. Publish both files from `dist/` as GitHub release assets with the matching source commit/tag.
 
 Hardware inventory is saved only with `Tailor-MyHardware.ps1 -SaveInventory`. Runtime profiles, reports, local headers, firmware, downloaded compilers and binaries are excluded from Git. Rebuild the generic package before distributing it. Do not commit USB logs or private inventory.
 
